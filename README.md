@@ -101,6 +101,76 @@ Health endpoint (Actuator): `http://localhost:8085/actuator/health`
 
 <details>
     <summary style="font-size: 1.35em; font-weight: bold;">
+        🌐 Self-Hosted (with HTTPS + Bearer Token Auth)
+    </summary>
+
+Deploy discord-mcp on your own server with a reverse proxy for automatic HTTPS and Bearer Token authentication to secure the public endpoint.
+
+#### Prerequisites
+- A server with Docker and a reverse proxy (e.g. Traefik, Caddy, or nginx) installed
+- A domain or hostname pointing to your server
+
+#### 1) Clone the repository on your server
+```bash
+git clone https://github.com/SaseQ/discord-mcp
+cd discord-mcp
+```
+
+#### 2) Create the env file
+```bash
+cat > .env <<EOF
+SPRING_PROFILES_ACTIVE=http
+DISCORD_TOKEN=<YOUR_DISCORD_BOT_TOKEN>
+DISCORD_GUILD_ID=<OPTIONAL_DEFAULT_SERVER_ID>
+MCP_API_TOKEN=<YOUR_SECRET_TOKEN>
+DOMAIN=<YOUR_DOMAIN_OR_HOSTNAME>
+EOF
+```
+
+> NOTE: Generate a secure token with `openssl rand -hex 32`
+
+#### 3) Start the container
+```bash
+docker compose up -d --build
+```
+
+#### 4) Verify
+```bash
+# Health check (no auth required)
+curl -fsS https://<YOUR_DOMAIN>/actuator/health
+
+# Test Bearer Token auth
+curl -H "Authorization: Bearer <YOUR_SECRET_TOKEN>" https://<YOUR_DOMAIN>/mcp
+```
+
+Default MCP endpoint URL: `https://<YOUR_DOMAIN>/mcp`
+
+#### Connecting from MCP clients
+
+**Claude Desktop / Cursor / Claude Code** — add to your MCP config:
+```json
+{
+  "mcpServers": {
+    "discord-mcp": {
+      "type": "http",
+      "url": "https://<YOUR_DOMAIN>/mcp",
+      "headers": {
+        "Authorization": "Bearer <YOUR_SECRET_TOKEN>"
+      }
+    }
+  }
+}
+```
+
+**Claude Desktop Connectors UI:**
+1. Go to `Settings` → `Connectors`
+2. Add connector with URL: `https://<YOUR_DOMAIN>/mcp`
+3. Add header: `Authorization: Bearer <YOUR_SECRET_TOKEN>`
+
+</details>
+
+<details>
+    <summary style="font-size: 1.35em; font-weight: bold;">
         🔧 Manual Installation
     </summary>
 
